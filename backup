@@ -1,0 +1,39 @@
+
+<?php
+	session_start();
+	require_once "Facebook/autoload.php";
+	require_once "Facebook/Facebook.php";
+
+	$fb = new \Facebook\Facebook([
+			'app_id'=> '351276868705190',
+			'app_secret'=>'157afe86fd8ec31e75bd39f5f1c46124',
+			'default_graph_version'=>'v2.12'
+		]);
+	$permissions =[];
+	$helper = $fb->getRedirectLoginHelper();
+	if (isset($_GET['state'])) {
+    	$helper->getPersistentDataHandler()->set('state', $_GET['state']);
+	}
+	$accesstoken = $helper->getAccessToken();
+	if(isset($accesstoken)){
+		$url = "https://graph.facebook.com/v2.6/me?fields=id,name,gender,hometown,email,address,education,
+		first_name,birthday,is_verified&access_token={$accesstoken}";
+		
+		$header = array("content-type: application/json");
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false );
+		curl_setopt($ch, CURLOPT_COOKIEJAR, "cookie.txt");
+		curl_setopt($ch, CURLOPT_COOKIEFILE, "cookie.txt");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_USERAGENT, "");
+		//curl_setopt($ch, CURLOPT_, );
+		$res = curl_exec($ch);
+		print_r($res);
+	}else{
+		$loginurl = $helper->getLoginUrl("http://localhost/Pra/",$permissions);
+		echo '<a href="'.$loginurl.'">login with facebook</a>';
+	}
+?>
